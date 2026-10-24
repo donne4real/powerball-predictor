@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Powerball Predictor</title>
+<meta name="description" content="Data-driven Powerball analysis: hot and cold number frequency, due-number tracking, and weighted prediction strategies over 296 historical draws. Runs entirely in your browser.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>⚡ Powerball Predictor</h1>
+    <p>Data-driven insights • Statistical analysis • Pattern recognition</p>
+  </header>
+
+  <div class="grid grid-4" style="margin-bottom:24px;">
+    <div class="card">
+      <h2><span class="icon">📊</span> Overview</h2>
+      <div class="stat-grid">
+        <div class="stat-item"><div class="value" id="statTotal">—</div><div class="label">Total Draws</div></div>
+        <div class="stat-item"><div class="value" id="statAvgWhite">—</div><div class="label">Avg White</div></div>
+        <div class="stat-item"><div class="value" id="statAvgPb">—</div><div class="label">Avg PB</div></div>
+        <div class="stat-item"><div class="value" id="statFreqPb">—</div><div class="label">Freq PB</div></div>
+        <div class="stat-item"><div class="value small" id="statRange">—</div><div class="label">Date Range</div></div>
+      </div>
+    </div>
+
+    <div class="card" style="grid-column: span 2;">
+      <h2><span class="icon">🔥❄️</span> Numbers</h2>
+      <div style="display:flex;flex-wrap:wrap;gap:24px;">
+        <div style="flex:1;min-width:160px;">
+          <div style="color:#f97316;font-weight:600;margin-bottom:8px;font-size:.95em;">🔥 Hot (Top 10)</div>
+          <div class="number-list" id="hotWhite"></div>
+        </div>
+        <div style="flex:1;min-width:160px;">
+          <div style="color:#38bdf8;font-weight:600;margin-bottom:8px;font-size:.95em;">❄️ Cold (Bottom 10)</div>
+          <div class="number-list" id="coldWhite"></div>
+        </div>
+        <div style="flex:1;min-width:120px;">
+          <div style="color:#f472b6;font-weight:600;margin-bottom:8px;font-size:.95em;">🎯 Powerball</div>
+          <div class="number-list" id="hotPb"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px;">
+    <h2><span class="icon">🔮</span> Prediction Generator</h2>
+    <div class="predict-controls">
+      <label for="strategy">Strategy:</label>
+      <select id="strategy">
+        <option value="frequency">Frequency (Hot Numbers)</option>
+        <option value="balanced">Balanced (Hot &amp; Cold Mix)</option>
+        <option value="random">Pure Random</option>
+        <option value="due">Due Numbers (Cold Bias)</option>
+      </select>
+      <label for="num_predictions">Count:</label>
+      <select id="num_predictions">
+        <option value="1">1</option>
+        <option value="3" selected>3</option>
+        <option value="5">5</option>
+        <option value="10">10</option>
+      </select>
+      <button class="btn-generate" id="btnGenerate">✨ Generate</button>
+    </div>
+    <div id="predictionOutput" class="prediction-result">
+      <span style="color:#9b87c7;">Click <strong>Generate</strong> to see predictions</span>
+    </div>
+    <p class="strategy-note" id="strategyNote"></p>
+  </div>
+
+  <div class="grid grid-2" style="margin-bottom:24px;">
+    <div class="card">
+      <h2><span class="icon">📈</span> Frequency Distribution</h2>
+      <div class="chart-switch">
+        <button id="btnWhiteFreq" class="active">White Balls</button>
+        <button id="btnPowerFreq">Powerballs</button>
+      </div>
+      <div class="chart-container">
+        <canvas id="freqChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <h2><span class="icon">📋</span> Recent Draw History</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Numbers</th><th>Powerball</th></tr>
+          </thead>
+          <tbody id="historyBody">
+            <tr class="loading-row"><td colspan="3"><span class="spinner"></span> Loading history…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p><strong>Disclaimer:</strong> This tool is for <strong>entertainment purposes only</strong>. Lottery draws are games of chance and no prediction method can guarantee winning results. Please play responsibly.</p>
+    <p class="source-line">Powerball Predictor • Not affiliated with Multi-State Lottery Association</p>
+    <p class="source-line">
+      <a href="https://github.com/donne4real/powerball-predictor" target="_blank" rel="noopener">Source code</a>
+      &nbsp;•&nbsp;
+      <a href="https://leye-ajibola.netlify.app" target="_blank" rel="noopener">Portfolio</a>
+    </p>
+  </footer>
+</div>
+
+<script src="assets/js/engine.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

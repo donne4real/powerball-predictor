@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Powerball Predictor</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#0d0221,#1a0533 30%,#0f0c3b 60%,#0a1628);color:#e0d4f5;min-height:100vh;padding:20px}
+.container{max-width:1400px;margin:0 auto}
+header{text-align:center;padding:30px 20px;background:rgba(255,255,255,.03);border-radius:20px;margin-bottom:30px;border:1px solid rgba(160,120,255,.15);backdrop-filter:blur(10px)}
+header h1{font-size:2.8em;font-weight:800;background:linear-gradient(135deg,#c084fc,#818cf8,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:1px}
+header p{color:#a892d6;margin-top:8px;font-size:1.1em}
+.grid{display:grid;gap:24px}
+.grid-2{grid-template-columns:1fr 1fr}
+.grid-3{grid-template-columns:1fr 1fr 1fr}
+.grid-4{grid-template-columns:2fr 1fr}
+.card{background:rgba(255,255,255,.04);border-radius:16px;padding:24px;border:1px solid rgba(160,120,255,.12);backdrop-filter:blur(8px);transition:transform .2s,box-shadow .2s}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(100,60,200,.2)}
+.card h2{font-size:1.2em;font-weight:600;margin-bottom:16px;color:#b89cf0;display:flex;align-items:center;gap:8px}
+.card h2 .icon{font-size:1.3em}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:16px}
+.stat-item{text-align:center;padding:16px 8px;background:rgba(255,255,255,.04);border-radius:12px;border:1px solid rgba(160,120,255,.08)}
+.stat-item .value{font-size:2em;font-weight:700;background:linear-gradient(135deg,#c084fc,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-item .label{font-size:.85em;color:#9b87c7;margin-top:4px}
+.ball{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;font-weight:700;font-size:1em;margin:4px}
+.ball-white{background:radial-gradient(circle at 35% 30%,#f0f0f0,#c0c0c0);color:#1a1a2e;box-shadow:0 2px 8px rgba(255,255,255,.2)}
+.ball-red{background:radial-gradient(circle at 35% 30%,#ff7b7b,#d32f2f);color:#fff;box-shadow:0 2px 8px rgba(255,50,50,.4);width:52px;height:52px;font-size:1.1em}
+.number-list{display:flex;flex-wrap:wrap;gap:6px}
+.predict-controls{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:20px}
+.predict-controls label{font-size:.95em;color:#b89cf0}
+.predict-controls select{padding:10px 16px;border-radius:10px;border:1px solid rgba(160,120,255,.3);background:rgba(20,10,50,.8);color:#e0d4f5;font-size:.95em;cursor:pointer;outline:none}
+.predict-controls select:focus{border-color:#818cf8}
+.btn-generate{padding:10px 28px;border:none;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;font-weight:700;font-size:1em;cursor:pointer;transition:transform .2s,box-shadow .2s}
+.btn-generate:hover{transform:scale(1.04);box-shadow:0 4px 20px rgba(124,58,237,.5)}
+.btn-generate:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.prediction-result{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:20px;background:rgba(255,255,255,.03);border-radius:12px;border:1px solid rgba(160,120,255,.1);min-height:80px}
+.prediction-result .label-pb{font-size:.9em;color:#f472b6;font-weight:600;margin-left:8px}
+.chart-container{position:relative;height:300px;width:100%}
+.chart-switch{display:flex;gap:8px;margin-bottom:12px}
+.chart-switch button{padding:6px 16px;border:1px solid rgba(160,120,255,.25);border-radius:8px;background:transparent;color:#a892d6;cursor:pointer;font-size:.85em;transition:all .2s}
+.chart-switch button.active{background:rgba(124,58,237,.3);border-color:#7c3aed;color:#c084fc}
+.chart-switch button:hover{background:rgba(124,58,237,.15)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.9em}
+th{text-align:left;padding:10px 12px;color:#9b87c7;border-bottom:1px solid rgba(160,120,255,.15)}
+td{padding:10px 12px;border-bottom:1px solid rgba(160,120,255,.06)}
+tr:hover{background:rgba(160,120,255,.04)}
+.balls-inline{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.balls-inline .ball{width:32px;height:32px;font-size:.8em;margin:0}
+.balls-inline .ball-red{width:36px;height:36px;font-size:.85em}
+.spinner{display:inline-block;width:20px;height:20px;border:3px solid rgba(160,120,255,.2);border-top-color:#c084fc;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-row{text-align:center;padding:40px;color:#9b87c7}
+footer{text-align:center;padding:30px 20px 10px;color:#6b5b8a;font-size:.85em;border-top:1px solid rgba(160,120,255,.08);margin-top:40px}
+@media(max-width:1024px){.grid-2,.grid-4{grid-template-columns:1fr}.grid-3{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.grid-3{grid-template-columns:1fr}header h1{font-size:2em}body{padding:12px}.card{padding:16px}}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>⚡ Powerball Predictor</h1>
+<p>Data-driven insights &bull; Statistical analysis &bull; Pattern recognition</p>
+</header>
+{% if analysis %}
+<div class="grid grid-4" style="margin-bottom:24px;">
+<div class="card">
+<h2><span class="icon">📊</span> Overview</h2>
+<div class="stat-grid">
+<div class="stat-item"><div class="value">{{ analysis.total_draws }}</div><div class="label">Total Draws</div></div>
+<div class="stat-item"><div class="value">{{ "%.1f"|format(analysis.avg_white or 0) }}</div><div class="label">Avg White</div></div>
+<div class="stat-item"><div class="value">{{ "%.1f"|format(analysis.avg_powerball or 0) }}</div><div class="label">Avg PB</div></div>
+<div class="stat-item"><div class="value">{{ analysis.most_common_pb or "—" }}</div><div class="label">Freq PB</div></div>
+<div class="stat-item"><div class="value">{{ analysis.span or "—" }}</div><div class="label">Date Range</div></div>
+</div>
+</div>
+<div class="card" style="grid-column: span 2;">
+<h2><span class="icon">🔥❄️</span> Numbers</h2>
+<div style="display:flex;flex-wrap:wrap;gap:24px;">
+<div style="flex:1;min-width:160px;">
+<div style="color:#f97316;font-weight:600;margin-bottom:8px;font-size:.95em;">🔥 Hot (Top 10)</div>
+<div class="number-list">
+{% for n, count in analysis.hot_white[:10] %}
+<span class="ball ball-white">{{ n }}</span>
+{% endfor %}
+</div>
+</div>
+<div style="flex:1;min-width:160px;">
+<div style="color:#38bdf8;font-weight:600;margin-bottom:8px;font-size:.95em;">❄️ Cold (Bottom 10)</div>
+<div class="number-list">
+{% for n, count in analysis.cold_white[:10] %}
+<span class="ball ball-white">{{ n }}</span>
+{% endfor %}
+</div>
+</div>
+<div style="flex:1;min-width:120px;">
+<div style="color:#f472b6;font-weight:600;margin-bottom:8px;font-size:.95em;">🎯 Powerball</div>
+<div class="number-list">
+{% for n in analysis.hot_powerball %}
+<span class="ball ball-red">{{ n }}</span>
+{% endfor %}
+</div>
+</div>
+</div>
+</div>
+</div>
+{% endif %}
+
+<div class="card" style="margin-bottom:24px;">
+<h2><span class="icon">🔮</span> Prediction Generator</h2>
+<div class="predict-controls">
+<label for="strategy">Strategy:</label>
+<select id="strategy">
+<option value="frequency">Frequency (Hot Numbers)</option>
+<option value="balanced">Balanced (Hot &amp; Cold Mix)</option>
+<option value="random">Pure Random</option>
+<option value="due">Due Numbers (Cold Bias)</option>
+</select>
+<label for="num_predictions">Count:</label>
+<select id="num_predictions">
+<option value="1">1</option>
+<option value="3" selected>3</option>
+<option value="5">5</option>
+<option value="10">10</option>
+</select>
+<button class="btn-generate" id="btnGenerate" onclick="generatePrediction()">✨ Generate</button>
+</div>
+<div id="predictionOutput" class="prediction-result">
+<span style="color:#9b87c7;">Click <strong>Generate</strong> to see predictions</span>
+</div>
+</div>
+
+<div class="grid grid-2" style="margin-bottom:24px;">
+<div class="card">
+<h2><span class="icon">📈</span> Frequency Distribution</h2>
+<div class="chart-switch">
+<button id="btnWhiteFreq" class="active" onclick="switchChart('white')">White Balls</button>
+<button id="btnPowerFreq" onclick="switchChart('powerball')">Powerballs</button>
+</div>
+<div class="chart-container">
+<canvas id="freqChart"></canvas>
+</div>
+</div>
+<div class="card">
+<h2><span class="icon">📋</span> Recent Draw History</h2>
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>Date</th><th>Numbers</th><th>Powerball</th></tr>
+</thead>
+<tbody id="historyBody">
+<tr class="loading-row"><td colspan="3"><span class="spinner"></span> Loading history…</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<footer>
+<p><strong>Disclaimer:</strong> This tool is for <strong>entertainment purposes only</strong>. Lottery draws are games of chance and no prediction method can guarantee winning results. Please play responsibly.</p>
+<p style="margin-top:8px;">Powerball Predictor &bull; Not affiliated with Multi-State Lottery Association</p>
+</footer>
+</div>
+
+<script>
+let freqChart = null;
+let currentChartMode = 'white';
+let frequencyData = null;
+{% if analysis %}
+frequencyData = { white: {{ analysis.white_freq_list | tojson }}, powerball: {{ analysis.pb_freq_list | tojson }} };
+{% endif %}
+function renderFreqChart(mode) {
+  if (!frequencyData) return;
+  const ctx = document.getElementById('freqChart').getContext('2d');
+  if (freqChart) freqChart.destroy();
+  const data = frequencyData[mode];
+  const labels = data.map((_, i) => i + 1);
+  const values = data;
+  const isPB = mode === 'powerball';
+  const maxVal = Math.max(...values);
+  const barColor = isPB
+    ? values.map(v => `rgba(239,68,68,${0.5+(v/maxVal)*0.4})`)
+    : values.map(v => `rgba(160,120,255,${0.4+(v/maxVal)*0.5})`);
+  const borderColor = isPB ? '#ef4444' : '#a078ff';
+  freqChart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [{ label: isPB ? 'Powerball Frequency' : 'White Ball Frequency', data: values, backgroundColor: barColor, borderColor, borderWidth: 1, borderRadius: 3 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1a0533', titleColor: '#c084fc', bodyColor: '#e0d4f5', borderColor: 'rgba(160,120,255,0.3)', borderWidth: 1 } },
+      scales: {
+        x: { title: { display: true, text: isPB ? 'Powerball Number' : 'White Ball Number', color: '#9b87c7' }, ticks: { color: '#9b87c7', maxTicksLimit: isPB ? 26 : 35 }, grid: { color: 'rgba(160,120,255,0.06)' } },
+        y: { title: { display: true, text: 'Frequency', color: '#9b87c7' }, ticks: { color: '#9b87c7' }, grid: { color: 'rgba(160,120,255,0.08)' }, beginAtZero: true }
+      }
+    }
+  });
+}
+function switchChart(mode) {
+  currentChartMode = mode;
+  document.getElementById('btnWhiteFreq').classList.toggle('active', mode === 'white');
+  document.getElementById('btnPowerFreq').classList.toggle('active', mode === 'powerball');
+  renderFreqChart(mode);
+}
+function generatePrediction() {
+  const strategy = document.getElementById('strategy').value;
+  const count = parseInt(document.getElementById('num_predictions').value, 10);
+  const output = document.getElementById('predictionOutput');
+  const btn = document.getElementById('btnGenerate');
+  btn.disabled = true;
+  output.innerHTML = '<span class="spinner"></span> Generating predictions…';
+  fetch('/api/predict', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ strategy, count })
+  })
+  .then(res => { if (!res.ok) throw new Error('Server error'); return res.json(); })
+  .then(data => {
+    const predictions = data.predictions || [];
+    if (predictions.length === 0) { output.innerHTML = '<span style="color:#f87171;">No predictions generated.</span>'; return; }
+    let html = '';
+    predictions.forEach((pred, idx) => {
+      if (idx > 0) html += '<hr style="border-color:rgba(160,120,255,0.1);margin:8px 0;">';
+      html += '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;">';
+      html += '<span style="color:#9b87c7;font-size:.85em;min-width:24px;">#' + (idx + 1) + '</span>';
+      (pred.white_balls || []).forEach(n => { html += '<span class="ball ball-white">' + n + '</span>'; });
+      html += '<span class="ball ball-red">' + (pred.powerball || '—') + '</span>';
+      html += '<span class="label-pb">PB</span>';
+      if (pred.strategy) html += '<span style="font-size:.8em;color:#6b5b8a;margin-left:4px;">(' + pred.strategy + ')</span>';
+      html += '</div>';
+    });
+    output.innerHTML = html;
+  })
+  .catch(err => { output.innerHTML = '<span style="color:#f87171;">⚠️ Error: ' + err.message + '</span>'; })
+  .finally(() => { btn.disabled = false; });
+}
+function loadHistory() {
+  const tbody = document.getElementById('historyBody');
+  fetch('/api/history')
+  .then(res => { if (!res.ok) throw new Error('Failed to load history'); return res.json(); })
+  .then(data => {
+    const draws = data.draws || data.history || [];
+    if (draws.length === 0) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#9b87c7;padding:30px;">No history available.</td></tr>'; return; }
+    let html = '';
+    draws.forEach(draw => {
+      const date = draw.date || draw.draw_date || '—';
+      const whites = draw.white_balls || draw.numbers || [];
+      const pb = draw.powerball || draw.pb || '—';
+      html += '<tr><td style="white-space:nowrap;">' + date + '</td><td><div class="balls-inline">';
+      whites.forEach(n => { html += '<span class="ball ball-white">' + n + '</span>'; });
+      html += '</div></td><td><span class="ball ball-red" style="width:32px;height:32px;font-size:.8em;">' + pb + '</span></td></tr>';
+    });
+    tbody.innerHTML = html;
+  })
+  .catch(err => { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#f87171;padding:30px;">⚠️ ' + err.message + '</td></tr>'; });
+}
+document.addEventListener('DOMContentLoaded', function() {
+  {% if analysis %} renderFreqChart('white'); {% endif %}
+  loadHistory();
+});
+</script>
+</body>
+</html>

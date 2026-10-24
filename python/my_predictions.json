@@ -1,0 +1,40 @@
+{
+  "exported_at": "2026-06-06T21:11:26.404796",
+  "strategy": "hot",
+  "total_draws_analyzed": 296,
+  "predictions": [
+    {
+      "white": [
+        11,
+        36,
+        38,
+        55,
+        63
+      ],
+      "powerball": 26,
+      "strategy": "hot"
+    },
+    {
+      "white": [
+        24,
+        26,
+        30,
+        49,
+        59
+      ],
+      "powerball": 19,
+      "strategy": "hot"
+    },
+    {
+      "white": [
+        7,
+        10,
+        60,
+        67,
+        69
+      ],
+      "powerball": 6,
+      "strategy": "hot"
+    }
+  ]
+}
